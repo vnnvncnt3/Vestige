@@ -19,21 +19,3 @@
         }
     }
 </div>
-
-@code {
-    [Parameter] public int Value { get; set; }
-    [Parameter] public EventCallback<int> ValueChanged { get; set; }
-    [Parameter] public bool ReadOnly { get; set; }
-    [Parameter] public bool Large { get; set; }
-    [Parameter] public int Max { get; set; } = 5;
-    [Parameter] public string SizeClass { get; set; } = "text-lg";
-    [Parameter] public string? Class { get; set; }
-
-    private bool IsInteractive => !ReadOnly && ValueChanged.HasDelegate;
-
-    private async Task Select(int star)
-    {
-        Value = star;
-        await ValueChanged.InvokeAsync(star);
-    }
-}
