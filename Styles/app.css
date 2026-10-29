@@ -28,7 +28,8 @@
   html.is-scrolled .btn-header:hover { @apply bg-slate-900 text-orange-50; }
 
   /* Full-screen mobile menu */
-  .mobile-menu { @apply pointer-events-none fixed inset-0 z-40 bg-slate-900 opacity-0 transition-opacity duration-500 md:hidden; transition-timing-function: var(--ease); }  .mobile-menu.is-open { @apply pointer-events-auto opacity-100; }
+  .mobile-menu { @apply pointer-events-none fixed inset-0 z-40 bg-slate-900 opacity-0 md:hidden; visibility: hidden; transition: opacity .5s var(--ease), visibility 0s linear .5s; }
+  .mobile-menu.is-open { @apply pointer-events-auto opacity-100; visibility: visible; transition: opacity .5s var(--ease), visibility 0s; }
   .mobile-link { @apply block translate-y-4 border-b border-orange-50/10 py-5 font-display text-5xl font-light text-orange-50 opacity-0 transition-all duration-500; transition-timing-function: var(--ease); }  .mobile-menu.is-open .mobile-link { @apply translate-y-0 opacity-100; }
   .mobile-link.is-active { @apply text-orange-300; }
 
@@ -47,3 +48,13 @@
   .kenburns { animation: none; }
   [data-reveal] { opacity: 1; transform: none; transition: none; }
 }
+
+/* Form validation. Blazor adds these classes at runtime, so they live outside @layer
+   (Tailwind would drop layered rules whose classes never appear in a .razor file). */
+.validation-message { margin-top: .4rem; font-size: .8125rem; color: #fdba74; }
+.field.invalid { border-bottom-color: #fb923c; }
+
+/* Bar shown by blazor.web.js when an unhandled error happens. */
+#blazor-error-ui { display: none; position: fixed; inset: auto 0 0 0; z-index: 100; padding: .75rem 3rem .75rem 1.25rem; background: #7c2d12; color: #fff7ed; font-size: .875rem; }
+#blazor-error-ui .reload { margin-left: .75rem; text-decoration: underline; }
+#blazor-error-ui .dismiss { position: absolute; right: 1rem; top: .7rem; cursor: pointer; }
