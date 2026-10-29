@@ -1,0 +1,128 @@
+@page "/book"
+
+<PageTitle>Book a Tour | Vestige</PageTitle>
+
+<PageHeader Image="tour-old-town.jpg" Alt="A guide leading guests through the old town" Eyebrow="Book a Tour" Title="Choose your walk." Lead="Pick a tour, a date and your group size." />
+
+<section class="bg-orange-50 py-16 lg:py-24">
+    <div class="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-12 lg:px-10">
+
+        <div class="lg:col-span-5" data-reveal>
+            <div class="bg-slate-900 p-8 text-orange-50 sm:p-10 lg:sticky lg:top-28">
+                @if (_confirmed is { } booking)
+                {
+                    <h2 class="font-display text-4xl font-light">You are booked in.</h2>
+                    <p class="mt-4 text-sm text-orange-50/70">Keep this reference for your walk.</p>
+                    <p class="mt-3 font-display text-5xl font-light text-amber-400">@booking.Reference</p>
+                    <dl class="mt-8 space-y-4 border-t border-orange-50/15 pt-6 text-sm">
+                        <div class="flex justify-between gap-6"><dt class="text-orange-50/60">Tour</dt><dd class="text-right">@booking.Tour</dd></div>
+                        <div class="flex justify-between gap-6"><dt class="text-orange-50/60">Date</dt><dd class="text-right">@(booking.Date?.ToString("dddd, d MMMM yyyy"))</dd></div>
+                        <div class="flex justify-between gap-6"><dt class="text-orange-50/60">Guests</dt><dd class="text-right">@booking.Guests</dd></div>
+                        <div class="flex justify-between gap-6"><dt class="text-orange-50/60">Name</dt><dd class="text-right">@booking.Name</dd></div>
+                    </dl>
+                    <p class="mt-6 text-sm leading-relaxed text-orange-50/70">The meeting point and details go to @booking.Email.</p>
+                    <div class="mt-8 flex flex-wrap gap-4">
+                        <button type="button" class="btn-light" @onclick="BookAnother">Book another tour</button>
+                        <a href="/" class="btn-outline">Back to Home</a>
+                    </div>
+                }
+                else
+                {
+                    <h2 class="font-display text-4xl font-light">Reserve your spot</h2>
+                    <EditForm Model="_booking" OnValidSubmit="Submit" OnInvalidSubmit="ClearError" FormName="booking-form" class="mt-8 space-y-7">
+                        <DataAnnotationsValidator />
+
+                        <div>
+                            <label for="tour" class="text-xs uppercase tracking-wider2 text-orange-50/60">Tour</label>
+                            <InputSelect id="tour" @bind-Value="_booking.Tour" @bind-Value:after="ClampGuests" class="field !border-orange-50/30 !bg-slate-900 !text-orange-50">
+                                <option value="">Select a tour</option>
+                                @foreach (var t in Tours) { <option value="@t.Name">@t.Name</option> }
+                            </InputSelect>
+                            <ValidationMessage For="() => _booking.Tour" />
+                        </div>
+
+                        <div>
+                            <label for="date" class="text-xs uppercase tracking-wider2 text-orange-50/60">Date</label>
+                            <InputDate id="date" @bind-Value="_booking.Date" min="@MinDate" max="@MaxDate" class="field !border-orange-50/30 !text-orange-50 [color-scheme:dark]" />
+                            <ValidationMessage For="() => _booking.Date" />
+                        </div>
+
+                        <div>
+                            <span class="text-xs uppercase tracking-wider2 text-orange-50/60">Guests</span>
+                            <div class="mt-3 flex items-center gap-6">
+                                <button type="button" class="h-11 w-11 border border-orange-50/30 text-xl transition-colors hover:bg-orange-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-orange-50"
+                                        aria-label="Remove a guest" disabled="@(_booking.Guests <= 1)" @onclick="() => ChangeGuests(-1)">&minus;</button>
+                                <span class="w-8 text-center font-display text-4xl" aria-live="polite">@_booking.Guests</span>
+                                <button type="button" class="h-11 w-11 border border-orange-50/30 text-xl transition-colors hover:bg-orange-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-orange-50"
+                                        aria-label="Add a guest" disabled="@(_booking.Guests >= MaxGuests)" @onclick="() => ChangeGuests(1)">+</button>
+                                <span class="text-xs text-orange-50/50">Up to @MaxGuests</span>
+                            </div>
+                            <ValidationMessage For="() => _booking.Guests" />
+                        </div>
+
+                        <div>
+                            <label for="name" class="text-xs uppercase tracking-wider2 text-orange-50/60">Your name</label>
+                            <InputText id="name" @bind-Value="_booking.Name" class="field !border-orange-50/30 !text-orange-50 placeholder:!text-orange-50/40" placeholder="Full name" autocomplete="name" />
+                            <ValidationMessage For="() => _booking.Name" />
+                        </div>
+
+                        <div>
+                            <label for="email" class="text-xs uppercase tracking-wider2 text-orange-50/60">Email</label>
+                            <InputText id="email" type="email" @bind-Value="_booking.Email" class="field !border-orange-50/30 !text-orange-50 placeholder:!text-orange-50/40" placeholder="you@example.com" autocomplete="email" />
+                            <ValidationMessage For="() => _booking.Email" />
+                        </div>
+
+                        @if (_error is not null)
+                        {
+                            <p class="text-sm text-orange-300" role="alert">@_error</p>
+                        }
+
+                        <button type="submit" class="btn-light w-full">Reserve</button>
+                    </EditForm>
+                }
+            </div>
+        </div>
+
+        <div class="lg:col-span-7">
+            @if (SelectedTour is { } tour)
+            {
+                <article class="border border-slate-900/10 bg-stone-50 p-8 sm:p-10" data-reveal>
+                    <p class="eyebrow">@tour.Tag</p>
+                    <h2 class="mt-3 font-display text-4xl font-medium sm:text-5xl">@tour.Name</h2>
+                    <p class="mt-4 text-lg leading-relaxed text-slate-900/70">@tour.Blurb</p>
+                    <p class="mt-6 text-xs uppercase tracking-wider2 text-slate-900/60">@tour.Duration &middot; up to @tour.MaxGuests guests</p>
+                    <ul class="mt-6 space-y-2 text-sm text-slate-900/80">
+                        @foreach (var item in tour.Includes)
+                        {
+                            <li class="flex items-center gap-3"><span class="h-px w-6 bg-amber-800"></span>@item</li>
+                        }
+                    </ul>
+                </article>
+            }
+            else
+            {
+                <div class="border border-slate-900/10 bg-stone-50 p-8 sm:p-10" data-reveal>
+                    <p class="eyebrow">Our tours</p>
+                    <ul class="mt-6 divide-y divide-slate-900/10">
+                        @foreach (var t in Tours)
+                        {
+                            <li class="py-5">
+                                <p class="font-display text-3xl font-medium">@t.Name</p>
+                                <p class="mt-1 text-sm text-slate-900/60">@t.Duration &middot; up to @t.MaxGuests guests</p>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="mt-10" data-reveal>
+                <span class="eyebrow">Good to know</span>
+                <ul class="mt-5 space-y-3 leading-relaxed text-slate-900/75">
+                    <li class="flex gap-3"><span class="mt-3 h-px w-6 shrink-0 bg-amber-800"></span>Book from tomorrow up to six months ahead.</li>
+                    <li class="flex gap-3"><span class="mt-3 h-px w-6 shrink-0 bg-amber-800"></span>Groups stay small. Each tour has its own limit, and a date closes once it is full.</li>
+                    <li class="flex gap-3"><span class="mt-3 h-px w-6 shrink-0 bg-amber-800"></span>You get a reference code the moment you reserve.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
