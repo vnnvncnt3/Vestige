@@ -41,7 +41,7 @@
                         <p class="text-sm text-amber-400" role="status">Thank you! Your review has been added.</p>
                     }
 
-                    <button type="submit" class="btn-light w-full">Submit Review</button>
+                    <button type="submit" disabled="@_saving" class="btn-light w-full disabled:opacity-50">Submit Review</button>
                 </EditForm>
             </div>
         </div>
@@ -50,9 +50,9 @@
             <div class="mb-10 grid gap-8 border-b border-slate-900/15 pb-10 sm:grid-cols-2" data-reveal>
                 <div>
                     <span class="eyebrow">Overall rating</span>
-                    <p class="mt-2 font-display text-7xl font-light">@ReviewStore.Average.ToString("0.0")<span class="text-3xl text-slate-900/40"> / 5</span></p>
+                    <p class="mt-2 font-display text-7xl font-light">@Average.ToString("0.0")<span class="text-3xl text-slate-900/40"> / 5</span></p>
                     <StarRating ReadOnly="true" Value="RoundedAverage" />
-                    <p class="mt-2 text-sm text-slate-900/60">@ReviewStore.All.Count review@(ReviewStore.All.Count == 1 ? "" : "s")</p>
+                    <p class="mt-2 text-sm text-slate-900/60">@_reviews.Count review@(_reviews.Count == 1 ? "" : "s")</p>
                 </div>
                 <div class="space-y-2 self-center">
                     @for (var star = 5; star >= 1; star--)
@@ -68,22 +68,41 @@
                 </div>
             </div>
 
-            @if (ReviewStore.All.Count == 0)
+            @if (_reviews.Count == 0)
             {
                 <p class="py-12 text-center text-slate-900/60">No reviews yet. Be the first to share your walk.</p>
             }
             else
             {
                 <ul class="space-y-6">
-                    @foreach (var r in ReviewStore.All)
+                    @foreach (var r in _reviews)
                     {
                         <li class="border border-slate-900/10 bg-stone-50 p-7 transition-shadow duration-500 hover:shadow-lg" data-reveal>
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <StarRating ReadOnly="true" Value="r.Rating" />
                                 <time class="text-xs uppercase tracking-wider2 text-slate-900/50">@r.CreatedAt.ToString("MMM d, yyyy")</time>
                             </div>
-                            <p class="mt-4 font-display text-2xl font-light leading-snug">@r.Comment</p>
-                            <p class="mt-5 text-sm"><span class="font-semibold">@r.Author</span> <span class="text-slate-900/50">· @r.Tour</span></p>
+                            @if (_editingId == r.Id)
+{
+    <div class="mt-4 space-y-3">
+        <StarRating @bind-Value="_editRating" />
+        <textarea @bind="_editComment" rows="3" maxlength="500" class="field resize-none border"></textarea>
+        @if (_editError is not null) { <p class="text-sm text-red-700" role="alert">@_editError</p> }
+        <div class="flex gap-3">
+            <button type="button" class="btn-primary" disabled="@_saving" @onclick="() => SaveEdit(r)">Save</button>
+            <button type="button" class="btn-outline !border-slate-900/40 !text-slate-900" @onclick="CancelEdit">Cancel</button>
+        </div>
+    </div>
+}
+else
+{
+    <p class="mt-4 font-display text-2xl font-light leading-snug">@r.Comment</p>
+    <p class="mt-5 text-sm"><span class="font-semibold">@r.Author</span> <span class="text-slate-900/50">· @r.Tour</span></p>
+    <div class="mt-4 flex gap-5 text-xs font-semibold uppercase tracking-wider2">
+        <button type="button" class="text-amber-800 hover:text-orange-900" @onclick="() => StartEdit(r)">Edit</button>
+        <button type="button" class="text-slate-900/60 hover:text-red-700" disabled="@_saving" @onclick="() => Remove(r)">Delete</button>
+    </div>
+}
                         </li>
                     }
                 </ul>
