@@ -11,6 +11,14 @@ builder.Services.AddSingleton<TourService>();
 builder.Services.AddSingleton<ReviewService>();
 builder.Services.AddSingleton<BookingService>();
 
+var supabaseUrl = builder.Configuration["Supabase:Url"]!;
+var supabaseKey = builder.Configuration["Supabase:Key"]!;
+
+var supabase = new Supabase.Client(supabaseUrl, supabaseKey,
+    new Supabase.SupabaseOptions { AutoConnectRealtime = false });
+await supabase.InitializeAsync();
+builder.Services.AddSingleton(supabase);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
