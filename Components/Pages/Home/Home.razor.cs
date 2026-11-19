@@ -27,11 +27,18 @@ public partial class Home
         new("Taste & Talk", "Finish with something local and the chance to ask everything you wondered."),
     };
 
+    private List<Review> _reviews = new();
+
+    protected override async Task OnInitializedAsync()
+        => _reviews = await ReviewStore.GetAllAsync();
+
     private IReadOnlyList<Tour> Tours => TourStore.All;
 
-    private IEnumerable<Review> FeaturedReviews => ReviewStore.All.Take(2);
+    private IEnumerable<Review> FeaturedReviews => _reviews.Take(2);
 
-    private int RoundedAverage => (int)Math.Round(ReviewStore.Average);
+    private double Average => _reviews.Count == 0 ? 0 : _reviews.Average(r => r.Rating);
+
+    private int RoundedAverage => (int)Math.Round(Average);
 
     /// <summary>Link to the booking page with the tour already selected.</summary>
     private static string BookUrl(Tour tour) => $"book?tour={Uri.EscapeDataString(tour.Name)}";
