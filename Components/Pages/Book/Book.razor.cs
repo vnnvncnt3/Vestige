@@ -16,6 +16,7 @@ public partial class Book
     private Booking _booking = new();
     private Booking? _confirmed;
     private string? _error;
+    private bool _saving;
 
     private IReadOnlyList<Tour> Tours => TourStore.All;
 
@@ -47,13 +48,19 @@ public partial class Book
     }
 
     // Only called when the DataAnnotations rules on Booking all pass.
-    private void Submit()
+    private async Task Submit()
     {
+        if (_saving) return;
+        _saving = true;
+
         _booking.Name = _booking.Name.Trim();
         _booking.Email = _booking.Email.Trim();
 
-        if (BookingStore.TryAdd(_booking, out _error))
-            _confirmed = _booking;
+        var (ok, error) = await BookingStore.AddAsync(_booking);
+        _error = error;
+        if (ok) _confirmed = _booking;
+
+        _saving = false;
     }
 
     private void ClearError() => _error = null;
