@@ -22,7 +22,8 @@
                     </dl>
                     <p class="mt-6 text-sm leading-relaxed text-orange-50/70">The meeting point and details go to @booking.Email.</p>
                     <div class="mt-8 flex flex-wrap gap-4">
-                        <button type="button" class="btn-light" @onclick="BookAnother">Book another tour</button>
+                        <a href="@($"my-booking?ref={booking.Reference}")" class="btn-light">Manage booking</a>
+                        <button type="button" class="btn-outline" @onclick="BookAnother">Book another tour</button>
                         <a href="/" class="btn-outline">Back to Home</a>
                     </div>
                 }
