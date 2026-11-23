@@ -1,0 +1,67 @@
+@page "/my-booking"
+
+<PageTitle>My Booking | Vestige</PageTitle>
+
+<PageHeader Image="tour-old-town.jpg" Alt="A guide leading guests through the old town" Eyebrow="My Booking" Title="Manage your walk." Lead="Enter your reference code to change or cancel a booking." />
+
+<section class="bg-orange-50 py-16 lg:py-24">
+    <div class="mx-auto max-w-2xl px-6">
+        <div class="bg-slate-900 p-8 text-orange-50 sm:p-10">
+
+            <label for="ref" class="text-xs uppercase tracking-wider2 text-orange-50/60">Reference code</label>
+            <div class="mt-2 flex gap-3">
+                <input id="ref" @bind="_lookup" placeholder="VST-XXXXXX" class="field !border-orange-50/30 !text-orange-50 placeholder:!text-orange-50/40" />
+                <button type="button" class="btn-light" @onclick="Find">Find</button>
+            </div>
+
+            @if (_cancelled)
+            {
+                <p class="mt-8 text-sm text-amber-400" role="status">Your booking has been cancelled.</p>
+            }
+            else if (_notFound)
+            {
+                <p class="mt-8 text-sm text-orange-300" role="alert">No active booking found for that code.</p>
+            }
+
+            @if (_booking is { } b)
+            {
+                <dl class="mt-8 space-y-4 border-t border-orange-50/15 pt-6 text-sm">
+                    <div class="flex justify-between gap-6"><dt class="text-orange-50/60">Reference</dt><dd class="text-right">@b.Reference</dd></div>
+                    <div class="flex justify-between gap-6"><dt class="text-orange-50/60">Tour</dt><dd class="text-right">@b.Tour</dd></div>
+                    <div class="flex justify-between gap-6"><dt class="text-orange-50/60">Date</dt><dd class="text-right">@b.TourDate.ToString("dddd, d MMMM yyyy")</dd></div>
+                    <div class="flex justify-between gap-6"><dt class="text-orange-50/60">Name</dt><dd class="text-right">@b.Name</dd></div>
+                    <div class="flex justify-between gap-6"><dt class="text-orange-50/60">Email</dt><dd class="text-right">@b.Email</dd></div>
+                </dl>
+
+                <div class="mt-8">
+                    <span class="text-xs uppercase tracking-wider2 text-orange-50/60">Guests</span>
+                    <div class="mt-3 flex items-center gap-6">
+                        <button type="button" class="h-11 w-11 border border-orange-50/30 text-xl transition-colors hover:bg-orange-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-30"
+                                aria-label="Remove a guest" disabled="@(_guests <= 1)" @onclick="() => ChangeGuests(-1)">&minus;</button>
+                        <span class="w-8 text-center font-display text-4xl" aria-live="polite">@_guests</span>
+                        <button type="button" class="h-11 w-11 border border-orange-50/30 text-xl transition-colors hover:bg-orange-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-30"
+                                aria-label="Add a guest" disabled="@(_guests >= MaxGuests)" @onclick="() => ChangeGuests(1)">+</button>
+                        <span class="text-xs text-orange-50/50">Up to @MaxGuests</span>
+                    </div>
+                </div>
+
+                @if (_error is not null) { <p class="mt-6 text-sm text-orange-300" role="alert">@_error</p> }
+                @if (_message is not null) { <p class="mt-6 text-sm text-amber-400" role="status">@_message</p> }
+
+                <div class="mt-8 flex flex-wrap gap-4">
+                    <button type="button" class="btn-light" disabled="@(_saving || _guests == b.Guests)" @onclick="Save">Save changes</button>
+
+                    @if (_confirmCancel)
+                    {
+                        <button type="button" class="btn-outline" disabled="@_saving" @onclick="ConfirmCancel">Yes, cancel booking</button>
+                        <button type="button" class="btn-outline" @onclick="KeepBooking">Keep it</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn-outline" @onclick="AskCancel">Cancel booking</button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</section>
